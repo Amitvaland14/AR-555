@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Year 2026 Cinematic Transition</title>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #050505;
+            color: #fff;
+            font-family: 'Cinzel', serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+
+        #bg-canvas,
+        #burst-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #burst-canvas {
+            z-index: 10;
+        }
+
+
+        .ui-container {
+            position: absolute;
+            z-index: 20;
+            text-align: center;
+            width: 100%;
+        }
+
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, #FFD700, #B8860B);
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #000;
+            cursor: pointer;
+            border-radius: 50px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+        }
+
+
+        .countdown-display {
+            font-size: 15vw;
+            font-weight: 900;
+            background: linear-gradient(to bottom, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            display: none;
+        }
+
+
+        .year-stage {
+            display: none;
+
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+
+        .decorations {
+            display: flex;
+            justify-content: center;
+            gap: 15vw;
+
+            position: absolute;
+            top: -30vh;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .hanging-ball {
+            position: relative;
+            width: 2px;
+            height: 25vh;
+            background: rgba(255, 215, 0, 0.5);
+            transform-origin: top center;
+        }
+
+        .ball {
+            position: absolute;
+            bottom: -20px;
+            left: -20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #FFD700, #B8860B);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+
+        .ball::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.3'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
+        .year-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            font-size: 18vw;
+            font-weight: 900;
+
+            background: linear-gradient(to bottom, #FBF5B7 0%, #BF953F 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: white;
+            filter: drop-shadow(0 10px 0 #3e2e0e) drop-shadow(0 20px 10px rgba(0, 0, 0, 0.5));
+            position: relative;
+            z-index: 5;
+        }
+
+        .digit {
+            display: inline-block;
+            position: relative;
+            min-width: 0.6em;
+            text-align: center;
+        }
+
+        .digit-wrapper {
+            position: relative;
+            display: inline-block;
+            min-width: 0.6em;
+            height: 1em;
+
+            overflow: visible;
+        }
+
+        .old-digit,
+        .new-digit {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            backface-visibility: hidden;
+        }
+
+        .old-digit {
+            top: 0;
+        }
+
+        .new-digit {
+            top: 0;
+            opacity: 0;
+            transform: translateY(100%);
+
+            filter: brightness(1.5);
+        }
+
+
+        .message-container {
+            margin-top: 30px;
+            height: 60px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            color: #FBF5B7;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            letter-spacing: 2px;
+            opacity: 0;
+        }
+
+
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            mix-blend-mode: overlay;
+        }
+
+
+        @media (max-width: 768px) {
+            .year-container {
+                font-size: 22vw;
+            }
+
+            .decorations {
+                gap: 18vw;
+                top: -25vh;
+            }
+
+            .hanging-ball {
+                height: 15vh;
+            }
+
+            .message-container {
+                font-size: 1.2rem;
+            }
+
+            .celebrate-btn {
+                padding: 15px 30px;
+                font-size: 1.2rem;
+            }
+        }
+
+
+        .gold-glow {
+            text-shadow: 0 0 20px #FFD700, 0 0 40px #FFD700;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="burst-canvas"></canvas>
+    <div class="flash-overlay"></div>
+
+    <div class="ui-container">
+
+
+        <button class="celebrate-btn">Celebrate New Year</button>
+
+        <div class="countdown-display">5</div>
+
+
+        <div class="year-stage">
+
+
+            <div class="decorations">
+                <div class="hanging-ball b1">
+                    <div class="ball"></div>
+                </div>
+                <div class="hanging-ball b2">
+                    <div class="ball"></div>
+                </div>
+                <div class="hanging-ball b3">
+                    <div class="ball"></div>
+                </div>
+                <div class="hanging-ball b4">
+                    <div class="ball"></div>
+                </div>
+            </div>
+
+            <div class="year-container">
+                <span class="digit">2</span>
+                <span class="digit">0</span>
+                <span class="digit">2</span>
+                <div class="digit-wrapper">
+                    <span class="old-digit">5</span>
+                    <span class="new-digit">6</span>
+                </div>
+            </div>
+
+
+
+
+            <div class="message-container"></div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            gsap.registerPlugin(TextPlugin);
+
+
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            function playSound(type) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'tick') {
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                    gain.gain.setValueAtTime(0.5, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'whoosh') {
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(100, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 1.5);
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.3, now + 1.0);
+                    gain.gain.linearRampToValueAtTime(0, now + 1.5);
+                    osc.start(now);
+                    osc.stop(now + 1.5);
+                } else if (type === 'boom') {
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(0.01, now + 1.5);
+                    gain.gain.setValueAtTime(1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+                    osc.start(now);
+                    osc.stop(now + 2);
+                }
+            }
+
+
+            const bgCanvas = document.getElementById('bg-canvas');
+            const burstCanvas = document.getElementById('burst-canvas');
+            const ctxBg = bgCanvas.getContext('2d');
+            const ctxBurst = burstCanvas.getContext('2d');
+
+            let particles = [];
+            let burstParticles = [];
+            let canvasWidth, canvasHeight;
+
+            function resize() {
+                canvasWidth = bgCanvas.width = burstCanvas.width = window.innerWidth;
+                canvasHeight = bgCanvas.height = burstCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * canvasWidth;
+                    this.y = canvasHeight + Math.random() * 100;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = -Math.random() * 3 - 1;
+                    this.size = Math.random() * 3;
+                    this.alpha = Math.random() * 0.5 + 0.1;
+                    this.color = `255, ${Math.floor(Math.random() * 100 + 150)}, 0`; // Gold/Orange
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= 0.005;
+                    if (this.alpha <= 0) this.reset();
+                }
+                draw(ctx) {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.fillStyle = `rgb(${this.color})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+
+            class BurstParticle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 10 + 2;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.life = 1;
+                    this.gravity = 0.2;
+                    this.color = `255, ${Math.floor(Math.random() * 100 + 155)}, 0`;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= 0.95;
+                    this.vy *= 0.95;
+                    this.life -= 0.02;
+                }
+                draw(ctx) {
+                    ctx.save();
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = `rgb(${this.color})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+            function animateCanvas() {
+                ctxBg.clearRect(0, 0, canvasWidth, canvasHeight);
+                ctxBurst.clearRect(0, 0, canvasWidth, canvasHeight);
+
+                particles.forEach(p => { p.update(); p.draw(ctxBg); });
+
+                burstParticles = burstParticles.filter(p => p.life > 0);
+                burstParticles.forEach(p => { p.update(); p.draw(ctxBurst); });
+
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+
+            function createBurst(x, y) {
+                for (let i = 0; i < 60; i++) {
+                    burstParticles.push(new BurstParticle(x, y));
+                }
+            }
+
+            const btn = document.querySelector('.celebrate-btn');
+            const countdownDisplay = document.querySelector('.countdown-display');
+            const yearStage = document.querySelector('.year-stage');
+            const oldDigit = document.querySelector('.old-digit');
+            const newDigit = document.querySelector('.new-digit');
+            const messageContainer = document.querySelector('.message-container');
+            const hangingBalls = document.querySelectorAll('.hanging-ball');
+
+            // Initial Intro
+            gsap.to(btn, { opacity: 1, duration: 2, delay: 0.5, ease: "power2.out" });
+
+            hangingBalls.forEach((ball, i) => {
+                gsap.to(ball, {
+                    rotation: i % 2 === 0 ? 5 : -5,
+                    transformOrigin: "top center",
+                    duration: 2 + (i * 0.1),
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+            });
+
+            btn.addEventListener('click', () => {
+
+                gsap.to(btn, { scale: 0, opacity: 0, duration: 0.5, ease: "back.in" });
+
+                const tl = gsap.timeline();
+
+
+                tl.set(countdownDisplay, { display: 'block', opacity: 1 });
+
+                for (let i = 5; i > 0; i--) {
+                    tl.call(() => {
+                        countdownDisplay.innerText = i;
+                        playSound('tick');
+                    });
+                    tl.fromTo(countdownDisplay,
+                        { scale: 0.5, opacity: 0 },
+                        { scale: 1.2, opacity: 1, duration: 0.5, ease: "power4.out" }
+                    );
+                    tl.to(countdownDisplay,
+                        { scale: 2, opacity: 0, duration: 0.4, ease: "power2.in" } // Total 0.9s per digit + logic time ~ 1s
+                    );
+                }
+
+
+                tl.call(() => {
+                    countdownDisplay.style.display = 'none';
+                    yearStage.style.display = 'flex';
+                    playSound('whoosh');
+                });
+
+                tl.from(".digit, .old-digit", {
+                    y: 100,
+                    opacity: 0,
+                    duration: 1.5,
+                    stagger: 0.1,
+                    ease: "power4.out"
+                });
+
+                tl.from(".hanging-ball", {
+                    y: -200,
+                    opacity: 0,
+                    duration: 1.5,
+                    stagger: 0.2,
+                    ease: "bounce.out"
+                }, "<");
+
+
+                tl.to({}, { duration: 1 });
+
+                tl.to(oldDigit, {
+                    y: -150,
+                    opacity: 0,
+                    filter: "blur(20px)",
+                    duration: 1.8,
+                    ease: "power4.in",
+                    onStart: () => {
+
+                        gsap.to("body", { x: -2, duration: 0.1, yoyo: true, repeat: 10 });
+                    }
+                });
+
+
+                tl.to({}, { duration: 0.2 });
+
+
+                tl.call(() => {
+
+                    const rect = document.querySelector('.digit-wrapper').getBoundingClientRect();
+                    createBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+                    playSound('boom');
+
+
+                    gsap.to(".flash-overlay", { opacity: 0.8, duration: 0.1, yoyo: true, repeat: 1 });
+                });
+
+                tl.to(newDigit, {
+                    y: 0,
+                    opacity: 1,
+                    scale: 1.5,
+                    duration: 1.5,
+                    ease: "power4.out",
+                    onStart: () => {
+                        newDigit.classList.add('gold-glow');
+                    }
+                });
+
+                tl.to(newDigit, {
+                    scale: 1,
+                    duration: 0.5,
+                    ease: "back.out(1.7)"
+                });
+
+                tl.to(".hanging-ball", {
+                    y: -10,
+                    duration: 0.3,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.out"
+                }, "<");
+                tl.to(messageContainer, { opacity: 1, duration: 0.5 });
+                tl.to(messageContainer, {
+                    text: "Welcome 2026 🎉",
+                    duration: 1.5,
+                    ease: "none"
+                });
+                tl.to(messageContainer, {
+                    text: "New Goals",
+                    delay: 3.5,
+                    duration: 4,
+                    ease: "none"
+                });
+                tl.to(messageContainer, {
+                    text: "AR-555 or ASR-555",
+                    delay: 3.5,
+                    duration: 4,
+                    ease: "none"
+                });
+                tl.to(".year-container", {
+                    y: -10,
+                    duration: 2,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: "sine.inOut"
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>
